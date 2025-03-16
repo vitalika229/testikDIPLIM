@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   Carousel,
@@ -8,6 +8,8 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useFilters } from "../context/FilterContext";
 
 interface BannerCarouselProps {
   banners?: {
@@ -16,6 +18,7 @@ interface BannerCarouselProps {
     description: string;
     imageUrl: string;
     linkUrl: string;
+    filterSeason?: string;
   }[];
 }
 
@@ -28,6 +31,7 @@ const BannerCarousel: React.FC<BannerCarouselProps> = ({
       imageUrl:
         "https://images.unsplash.com/photo-1560506840-ec148e82a604?w=1200&q=80",
       linkUrl: "/collections/spring",
+      filterSeason: "summer",
     },
     {
       id: "2",
@@ -37,6 +41,7 @@ const BannerCarousel: React.FC<BannerCarouselProps> = ({
       imageUrl:
         "https://images.unsplash.com/photo-1565462905097-5e701c31dcdb?w=1200&q=80",
       linkUrl: "/sales/winter",
+      filterSeason: "winter",
     },
     {
       id: "3",
@@ -45,12 +50,46 @@ const BannerCarousel: React.FC<BannerCarouselProps> = ({
       imageUrl:
         "https://images.unsplash.com/photo-1604671801908-6f0c6a092c05?w=1200&q=80",
       linkUrl: "/collections/school",
+      filterSeason: "demi",
     },
   ],
 }) => {
+  const navigate = useNavigate();
+  const { setFilters } = useFilters();
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const handleBannerClick = (
+    banner: (typeof banners)[0],
+    e: React.MouseEvent,
+  ) => {
+    e.preventDefault();
+
+    // Apply filters based on banner
+    const newFilters: Record<string, string> = {};
+
+    if (banner.filterSeason) {
+      newFilters.season = banner.filterSeason;
+    }
+
+    setFilters(newFilters);
+
+    // Navigate to home with hash to scroll to products
+    navigate("/#products");
+
+    // Scroll to products section
+    const productsSection = document.getElementById("products");
+    if (productsSection) {
+      productsSection.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-8 bg-white">
-      <Carousel className="relative">
+      <Carousel
+        className="relative"
+        value={activeIndex}
+        onValueChange={setActiveIndex}
+      >
         <CarouselContent>
           {banners.map((banner) => (
             <CarouselItem key={banner.id}>
@@ -58,7 +97,7 @@ const BannerCarousel: React.FC<BannerCarouselProps> = ({
                 <img
                   src={banner.imageUrl}
                   alt={banner.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent flex flex-col justify-end p-8">
                   <h2 className="text-3xl font-bold text-white mb-2">
@@ -69,7 +108,7 @@ const BannerCarousel: React.FC<BannerCarouselProps> = ({
                   </p>
                   <Button
                     className="w-fit bg-primary hover:bg-primary/90 text-white"
-                    onClick={() => (window.location.href = banner.linkUrl)}
+                    onClick={(e) => handleBannerClick(banner, e)}
                   >
                     Подробнее
                   </Button>
@@ -90,8 +129,8 @@ const BannerCarousel: React.FC<BannerCarouselProps> = ({
           {banners.map((banner, index) => (
             <div
               key={`indicator-${banner.id}`}
-              className="w-2 h-2 rounded-full bg-white/50 hover:bg-white cursor-pointer"
-              // Note: In a real implementation, this would be connected to the carousel API
+              className={`w-2 h-2 rounded-full cursor-pointer transition-all ${activeIndex === index ? "bg-white w-4" : "bg-white/50"}`}
+              onClick={() => setActiveIndex(index)}
             />
           ))}
         </div>
