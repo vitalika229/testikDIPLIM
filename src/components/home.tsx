@@ -1,42 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "./Header";
 import BannerCarousel from "./BannerCarousel";
 import CategorySection from "./CategorySection";
 import ProductGrid from "./ProductGrid";
 import Footer from "./Footer";
+import { useCart } from "../context/CartContext";
 
 const HomePage: React.FC = () => {
-  const [cartItemCount, setCartItemCount] = useState<number>(0);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+
+  // Scroll to hash on load
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.substring(1);
+      const element = document.getElementById(id);
+      if (element) {
+        setTimeout(() => {
+          element.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    }
+  }, []);
 
   const handleAddToCart = (productId: string) => {
-    // In a real application, this would add the product to the cart
-    // For now, we'll just increment the cart counter
-    setCartItemCount((prev) => prev + 1);
+    // In a real application, this would add the product to the cart with more details
+    // For now, we'll just call addToCart with minimal info
+    addToCart({
+      id: productId,
+      name: "Product",
+      price: 0,
+      quantity: 1,
+      imageUrl: "",
+      size: "",
+      color: "",
+    });
   };
 
   const handleSearchSubmit = (searchTerm: string) => {
-    // In a real application, this would search for products
-    console.log(`Searching for: ${searchTerm}`);
+    setSearchTerm(searchTerm);
+    // Scroll to products section
+    const productsSection = document.getElementById("products");
+    if (productsSection) {
+      productsSection.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
-  const handleCartClick = () => {
-    // In a real application, this would navigate to the cart page
-    console.log("Navigating to cart");
-  };
-
-  const handleProfileClick = () => {
-    // In a real application, this would navigate to the profile page
-    console.log("Navigating to profile");
+  const handleSummerCollectionClick = () => {
+    navigate("/category/summer");
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <Header
-        cartItemCount={cartItemCount}
-        onSearchSubmit={handleSearchSubmit}
-        onCartClick={handleCartClick}
-        onProfileClick={handleProfileClick}
-      />
+      <Header onSearchSubmit={handleSearchSubmit} />
 
       <main className="flex-grow">
         {/* Hero Banner Carousel */}
@@ -50,6 +68,7 @@ const HomePage: React.FC = () => {
           title="Хиты продаж"
           onAddToCart={handleAddToCart}
           showFilters={true}
+          searchTerm={searchTerm}
         />
 
         {/* Seasonal Collection */}
@@ -64,7 +83,10 @@ const HomePage: React.FC = () => {
                   Легкие и яркие наряды для самых активных летних приключений
                   вашего ребенка.
                 </p>
-                <button className="bg-pink-600 hover:bg-pink-700 text-white font-medium py-2 px-6 rounded-full transition-colors">
+                <button
+                  onClick={handleSummerCollectionClick}
+                  className="bg-pink-600 hover:bg-pink-700 text-white font-medium py-2 px-6 rounded-full transition-colors"
+                >
                   Смотреть коллекцию
                 </button>
               </div>
@@ -84,6 +106,7 @@ const HomePage: React.FC = () => {
           title="Новинки"
           onAddToCart={handleAddToCart}
           showFilters={false}
+          searchTerm={searchTerm}
           products={[
             {
               id: "new-1",

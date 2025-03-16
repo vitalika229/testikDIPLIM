@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Slider } from "./ui/slider";
 import { Checkbox } from "./ui/checkbox";
 import {
@@ -8,25 +8,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { useFilters, FilterState } from "../context/FilterContext";
 
 interface ProductFiltersProps {
   onFilterChange?: (filters: FilterState) => void;
 }
 
-interface FilterState {
-  age: string;
-  season: string;
-  priceRange: [number, number];
-  sizes: string[];
-}
-
 const ProductFilters = ({ onFilterChange }: ProductFiltersProps = {}) => {
-  const [filters, setFilters] = useState<FilterState>({
-    age: "all",
-    season: "all",
-    priceRange: [0, 10000],
-    sizes: [],
-  });
+  const { filters, setFilters } = useFilters();
 
   const handleAgeChange = (value: string) => {
     const newFilters = { ...filters, age: value };
@@ -60,7 +49,7 @@ const ProductFilters = ({ onFilterChange }: ProductFiltersProps = {}) => {
   };
 
   return (
-    <div className="w-full bg-white p-4 rounded-lg shadow-sm">
+    <div className="w-full bg-white p-6 rounded-xl shadow-md border border-gray-100">
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
         {/* Age Filter */}
         <div className="w-full md:w-1/4">
@@ -109,7 +98,7 @@ const ProductFilters = ({ onFilterChange }: ProductFiltersProps = {}) => {
             Цена: {filters.priceRange[0]} ₽ - {filters.priceRange[1]} ₽
           </label>
           <Slider
-            defaultValue={[filters.priceRange[0], filters.priceRange[1]]}
+            value={[filters.priceRange[0], filters.priceRange[1]]}
             max={10000}
             step={100}
             onValueChange={handlePriceChange}
